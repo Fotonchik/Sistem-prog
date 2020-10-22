@@ -1,0 +1,8 @@
+﻿  Source.cpp
+C:\Users\kolgn\Desktop\Программы\Project1menu\Project1menu\Source.cpp(53,8): warning C4101: hMenu: неиспользованная локальная переменная
+C:\Users\kolgn\Desktop\Программы\Project1menu\Project1menu\Source.cpp(95,20): error C2086: HBRUSH hREDBrush: переопределение
+C:\Users\kolgn\Desktop\Программы\Project1menu\Project1menu\Source.cpp(7): message : см. объявление "hREDBrush"
+C:\Users\kolgn\Desktop\Программы\Project1menu\Project1menu\Source.cpp(96,5): error C2086: int sw: переопределение
+C:\Users\kolgn\Desktop\Программы\Project1menu\Project1menu\Source.cpp(8): message : см. объявление "sw"
+C:\Users\kolgn\Desktop\Программы\Project1menu\Project1menu\Source.cpp(100,14): error C2084: функция "int WinMain(HINSTANCE,HINSTANCE,LPSTR,int)" уже имеет текст реализации
+C:\Users\kolgn\Desktop\Программы\Project1menu\Project1menu\Source.cpp(10): message : см. предыдущее определение "WinMain"
