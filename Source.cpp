@@ -1,105 +1,77 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include<Windows.h>
 #include<tchar.h>
-#include<cmath>
-#include "menudemo.h"
-HBRUSH hBlueBrush, hGreenBrush, hRedBrush, hYellowBrush;
-HPEN hBluePen, hRedPen;
-int sw;
-MSG Msg;
+
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-	HWND hMainWnd;
-	TCHAR szClassName[] = _T("menudemo");
+TCHAR szAppName[] = _T("Resourc1");
+HINSTANCE hInst;
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+	LPSTR szCmdLine, int iCmdShow)
+{
+	HWND hWnd;
 	MSG msg;
-	WNDCLASSEX wc;
-	ZeroMemory(&wc, sizeof(wc));
-	wc.cbSize = sizeof(wc);
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInstance;
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wc.lpszMenuName = _T("menudemo");
-	wc.lpszClassName = szClassName;
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-	if (!RegisterClassExW(&wc)) {
-		MessageBoxW(NULL, _T("Cannot registr class"), _T("Error"), MB_OK);
-		return 0;
-	}
-	hMainWnd = CreateWindow(szClassName, _T("menudemo"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL,
-		hInstance, NULL);
+	WNDCLASSEX wndclass;
+	wndclass.cbSize = sizeof(wndclass);
+	wndclass.style = CS_HREDRAW | CS_VREDRAW;
+	wndclass.lpfnWndProc = WndProc;
+	wndclass.cbClsExtra = 0;
+	wndclass.cbWndExtra = 0;
+	wndclass.hInstance = hInstance;
+	wndclass.hIcon = LoadIcon(hInstance, szAppName);
+	wndclass.hCursor = LoadCursor(hInstance, szAppName);
+	wndclass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wndclass.lpszMenuName = NULL;
+	wndclass.lpszClassName = szAppName;
+	wndclass.hIconSm = LoadIcon(hInstance, szAppName);
+	RegisterClassEx(&wndclass);
+	hInst = hInstance;
+	hWnd = CreateWindow(szAppName, _T("Icon and Cursor Demo"),
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		NULL, NULL, hInstance, NULL);
 
-	if (!hMainWnd) {
-		MessageBox(NULL, _T("Cannot create main window"), _T("Error"), MB_OK);
-		return 0;
+	ShowWindow(hWnd, iCmdShow);
+	UpdateWindow(hWnd);
+	while (GetMessage(&msg, NULL, 0, 0)) {
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
 	}
-	ShowWindow(hMainWnd, nCmdShow);
-	while (GetMessage(&Msg, NULL, 0, 0)) {
-		DispatchMessageW(&Msg);
-	}
-	return 0;
+	return msg.wParam;
 }
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
+	static HICON hIcon;
+	static int cxIcon, cyIcon, cxClient, cyClient;
+
 	HDC hdc;
 	PAINTSTRUCT ps;
-	HMENU hPopupMenu;
-	TCHAR str0[] = _T("Фон");
-	TCHAR str1[] = _T("Синий");
-	TCHAR str2[] = _T("Красный");
-	TCHAR str3[] = _T("Выход");
-	RECT rect;
-	switch (uMsg) {
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case MI_BLUE:
-			sw = 1;
-			InvalidateRect(hWnd, NULL, TRUE);
-			break;
-		case MI_RED:
-			sw = 2;
-			InvalidateRect(hWnd, NULL, TRUE);
-			break;
-		case MI_EXIT:
-			DestroyWindow(hWnd);
-		}
-		break;
-	case WM_RBUTTONDOWN:
-		hBlueBrush = CreateSolidBrush(RGB(100, 100, 255));
-		hGreenBrush = CreateSolidBrush(RGB(255, 100, 100));
-		hPopupMenu = CreatePopupMenu();
-		AppendMenu(hPopupMenu, MF_STRING, MI_BLUE, str1);
-		AppendMenu(hPopupMenu, MF_STRING, MI_RED, str2);
-		AppendMenu(hPopupMenu, MF_SEPARATOR, 0, NULL);
-		AppendMenu(hPopupMenu, MF_STRING, MI_EXIT, str3);
-		GetWindowRect(hWnd, &rect);
-		TrackPopupMenu(hPopupMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON, Msg.pt.x, Msg.pt.y, 0, hWnd, NULL);
-		break;
+	int x, y;
+	switch (iMsg) {
+	case WM_CREATE:
+		hIcon = LoadIcon(hInst, szAppName);
+		cxIcon = GetSystemMetrics(SM_CXICON);
+		cyIcon = GetSystemMetrics(SM_CYICON);
+		return 0;
+	case WM_SIZE:
+		cxClient = LOWORD(lParam);
+		cyClient = HIWORD(lParam);
+		return 0;
 	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-
-		if (sw == 1)
+		hdc = BeginPaint(hwnd, &ps);
+		for (y = cyIcon; y < cyClient; y += 2 * cyIcon)
 		{
-			FillRect(hdc, &ps.rcPaint, hBlueBrush);
+			for (x = cxIcon; x < cxClient; x += 2 * cxIcon)
+			{
+				DrawIcon(hdc, x, y, hIcon);
+			}
 		}
-		if (sw == 2)
-		{
-			FillRect(hdc, &ps.rcPaint, hGreenBrush);
-		}
-
-		EndPaint(hWnd, &ps);
-		break;
+		EndPaint(hwnd, &ps);
+		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		return 0;
 	}
-	return 0;
+	return DefWindowProc(hwnd, iMsg, wParam, lParam);
 
 }
