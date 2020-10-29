@@ -1,13 +1,16 @@
 #include<Windows.h>
-#include<tchar.h>
+#define DIVISIONS 5
+#define MoveTo(hdc,x,y) MovetoEx(hdc,x,y,NULL)
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-TCHAR szAppName[] = _T("Resourc1");
+LRESULT CALLBACK ChildWndProc(HWND, UINT, WPARAM, LPARAM);
+char szChildClass[] = "Checker3_Child";
 HINSTANCE hInst;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-	LPSTR szCmdLine, int iCmdShow)
+	LPSTR szCmdLine, int iCmdShow) 
 {
-	HWND hWnd;
+	static char szAppName[] = "Checker3";
+	HWND hwnd;
 	MSG msg;
 	WNDCLASSEX wndclass;
 	wndclass.cbSize = sizeof(wndclass);
@@ -16,15 +19,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
 	wndclass.hInstance = hInstance;
-	wndclass.hIcon = LoadIcon(hInstance, szAppName);
-	wndclass.hCursor = LoadCursor(hInstance, szAppName);
-	wndclass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wndclass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wndclass.lpszMenuName = NULL;
 	wndclass.lpszClassName = szAppName;
-	wndclass.hIconSm = LoadIcon(hInstance, szAppName);
+	wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	RegisterClassEx(&wndclass);
 	hInst = hInstance;
-	hWnd = CreateWindow(szAppName, _T("Icon and Cursor Demo"),
+	hwnd = CreateWindow(szAppName, "Checker3 Demo",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -32,8 +35,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		CW_USEDEFAULT,
 		NULL, NULL, hInstance, NULL);
 
-	ShowWindow(hWnd, iCmdShow);
-	UpdateWindow(hWnd);
+	ShowWindow(hwnd, iCmdShow);
+	UpdateWindow(hwnd);
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
@@ -41,32 +44,35 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	return msg.wParam;
 }
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
-	static HICON hIcon;
-	static int cxIcon, cyIcon, cxClient, cyClient;
-
-	HDC hdc;
-	PAINTSTRUCT ps;
-	int x, y;
+	static HWND hwndChild[DIVISIONS][DIVISIONS];
+	int cxBlock, cyBlock,x,y;
+	
 	switch (iMsg) {
 	case WM_CREATE:
-		hIcon = LoadIcon(hInst, szAppName);
-		cxIcon = GetSystemMetrics(SM_CXICON);
-		cyIcon = GetSystemMetrics(SM_CYICON);
+		for ( x = 0; x < DIVISIONS; x++)
+		
+			for ( y = 0; y < DIVISIONS; y++)
+			{
+				hwndChild[x][y] = CreateWindow(szChildClass, NULL,
+					WS_CHILDWINDOW | WS_VISIBLE,
+					0, 0, 0, 0,
+					hwnd, (HMENU)(Y << 8 | X),
+					(HINSTANCE)GetWindowLong(hwnd, GWL_HINSTANCE),
+					NULL);
+			}
+		
 		return 0;
 	case WM_SIZE:
-		cxClient = LOWORD(lParam);
-		cyClient = HIWORD(lParam);
+		cxBlock = LOWORD(lParam)/ DIVISIONS;
+		cyBlock = HIWORD(lParam)/ DIVISIONS;
+		for (x = 0; x < DIVISIONS; x++)
+			for (y = 0; y < DIVISIONS; y++)
+				MoveWindow(hwndChild[x][y],
+					x * cxBlock, y * cyBlock,
+					cxBlock, cyBlock, TRUE);
 		return 0;
-	case WM_PAINT:
-		hdc = BeginPaint(hwnd, &ps);
-		for (y = cyIcon; y < cyClient; y += 2 * cyIcon)
-		{
-			for (x = cxIcon; x < cxClient; x += 2 * cxIcon)
-			{
-				DrawIcon(hdc, x, y, hIcon);
-			}
-		}
-		EndPaint(hwnd, &ps);
+	case WM_LBUTTONDOWN:
+		MessageBeep(0);
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -75,3 +81,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	return DefWindowProc(hwnd, iMsg, wParam, lParam);
 
 }
+
+LRESULT CALLBACK ChildWndProc(HWND hwnd, UINT iMsg,
+	WPARAM wParam, LPARAM lParam) 
+{
+	HDC hdc;
+	PAINTSTRUCT ps;
+	RECT rect;
+
+	switch (iMsg) {
+	case WM_CREATE:
+		SetWindowWord(hwnd, 0, 0);
+		return 0;
+	case WM_LBUTTONDOWN:
+		SetWindowWord(hwnd, 0, 1 ^ GetWindowWord(hwnd, 0));
+		InvalidateRect(hwnd, NULL, FALSE);
+		return 0;
+
+	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+		GetClientRect(hwnd, &rect);
+		Rectangle(hdc, 0, 0, rect.right, rect.bottom);
+		if (GetWindowWord(hwnd, 0))
+		{
+			//MoveTo(hdc, 0, 0);
+			LineTo(hdc, rect.right, rect.bottom);
+
+		}
+		EndPaint(hwnd, &ps);
+		return 0;
+	}
+	return DefWindowProc(hwnd, iMsg, wParam, lParam);
+
+}
+
