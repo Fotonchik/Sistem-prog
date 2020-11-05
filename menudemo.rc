@@ -1,0 +1,17 @@
+#include "Headero.h"
+menudemo MENU
+{
+	POPUP "Меню" {
+		
+		MENUITEM "Вырезать", IDM_CUT
+		MENUITEM "Удалить", IDM_DEL
+		MENUITEM "Копировать", IDM_COPY
+		MENUITEM "Вставить", IDM_PASTE
+		MENUITEM "Новый...", IDM_NEW
+		MENUITEM "Отменить", IDM_UNDO
+		MENUITEM "Сохранить", IDM_SAVE
+		MENUITEM "Сохранить как...", IDM_SAVEAS
+		MENUITEM SEPARATOR
+		MENUITEM "Выход", IDM_EXIT
+	}
+}
