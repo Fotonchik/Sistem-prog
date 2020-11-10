@@ -1,4 +1,6 @@
-#define _CRT_SECURE_NO_WARNINGS
+// 1Простое отображение картинки в окне
+//2 Это чтобы он картинку по всему окну расширял, картинка гигантская будет
+//3 Изображенеи в ограниченной области - маленькое #define _CRT_SECURE_NO_WARNINGS
 #include<Windows.h>
 #include<Windowsx.h>
 #include<tchar.h>
@@ -187,3 +189,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 //	return 0;
 //
 //}
+
+
+//Изображенеи в ограниченной области - маленькое 
+PAINTSTRUCT ps;
+	HDC hdc;
+	static int caption, menu, border;
+	static HDC memBit;
+	static HBITMAP hBitmap;
+	static BITMAP bm;
+	switch (message)
+	{
+	case WM_CREATE:
+		caption = GetSystemMetrics(SM_CYCAPTION);
+		menu = GetSystemMetrics(SM_CYMENU);
+		border = GetSystemMetrics(SM_CXFIXEDFRAME);
+		hBitmap = (HBITMAP)LoadImage(NULL, _T("bitmap1.bmp"), IMAGE_BITMAP,
+			0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		if (hBitmap == NULL)
+		{
+			MessageBox(hWnd, _T("файл не найден"), _T("загрузка изображения"),
+				MB_OK | MB_ICONHAND);
+			DestroyWindow(hWnd);
+			return 1;
+		}
+		GetObject(hBitmap, sizeof(bm), &bm);
+		hdc = GetDC(hWnd);
+		memBit = CreateCompatibleDC(hdc);
+		SelectObject(memBit, hBitmap);
+		ReleaseDC(hWnd, hdc);
+		break;
+	case WM_SIZE:
+		MoveWindow(hWnd, 100, 50, bm.bmWidth + 2 * border, bm.bmHeight + caption
+			+ menu + border, TRUE);
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		/*case IDM_EXIT: DestroyWindow(hWnd); break;
+		*/default: return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, memBit, 0, 0, SRCCOPY);
+		EndPaint(hWnd, &ps);
+		break;
+	case WM_DESTROY:PostQuitMessage(0); break;
+	default: return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
