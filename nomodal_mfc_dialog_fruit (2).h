@@ -1,0 +1,17 @@
+#define IDM_DIALOG                      100
+#define IDM_EXIT                    102
+#define IDM_HELP                     104
+#define IDD_RED                    105
+#define IDD_GREEN                     106
+#define IDI_MY2                     107
+#define IDC_MYICON                     108
+#define IDR_MAINFRAME                     109
+#define IDD_MY2_DIALOG                     110
+#define IDM_ABOUTBOX                    111
+#define IDD_ABOUT                   112
+#define IDI_SMALL                    116
+#define IDD_SELFRUIT                     114
+#define IDD_LB1                     203
+#define IDD_EB1                     204
+#define IDD_EDITOK                     205
+#define IDS_APP_TITLE                     113
